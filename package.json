@@ -5,10 +5,17 @@
   "main": "index.js",
   "dependencies": {
     "blync": "otothea/node-blync",
-    "express": "4"
+    "express": "~4",
+    "connect": "~3",
+    "body-parser": "~1",
+    "cookie-parser": "~1",
+    "express-session": "~1"
   },
   "devDependencies": {},
   "author": "Oscar Armstrong",
-  "repository": "https://github.com/otothea/node-blync-api.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/otothea/node-blync-api.git"
+  },
   "license": "ISC"
 }

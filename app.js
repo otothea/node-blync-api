@@ -1,6 +1,36 @@
-//
-// Setup App
-//
+/*
+ *  APP LEVEL CONSTANTS
+ */
+
+// Available statuses string
+const STATUSES_STRING = '"available" | "busy" | "nodisturb" | "away" | "offline" | "rave" | "police" | "traffic"';
+
+// Statuses enum
+const STATUSES = {
+  AVAILABLE: 'available',
+  AWAY: 'away',
+  NODISTURB: 'nodisturb',
+  BUSY: 'busy',
+  OFFLINE: 'offline',
+  POLICE: 'police',
+  RAVE: 'rave',
+  TRAFFIC: 'traffic',
+};
+
+const COLORS = {
+  OFF: 'off',
+  WHITE: 'white',
+  MAGENTA: 'magenta',
+  BLUE: 'blue',
+  CYAN: 'cyan',
+  GREEN: 'green',
+  RED: 'red',
+  YELLOW: 'yellow',
+};
+
+/*
+ *  SETUP APP
+ */
 
 // Require blync
 var blync = require('blync');
@@ -9,22 +39,63 @@ var blync = require('blync');
 var devices = blync.getDevices();
 var deviceCount = devices.length;
 
-// If there are devices, start the app
-if (deviceCount > 0) {
+// If there are no devices, throw error
+if (deviceCount == 0) {
+  console.log('\n\n****************************************************************************************************\n*\n*\n*    Process Exited. No Devices Found.\n*\n*\n****************************************************************************************************\n\n');
+  return;
+}
+
+else {
+  /*
+   *  START SERVER
+   */
+
   // Initialize HTTP Server
   var config = require('./config/app'),
       express = require('express'),
+      bodyParser = require('body-parser'),
+      cookieParser = require('cookie-parser'),
+      session = require('express-session'),
       app = express(),
       http = require('http'),
       server = http.createServer(app);
 
   // Start Web Server
   server.listen(config.port, config.hostname);
-  console.log('\n\n****************************************************************************************************\n*\n*\n*    Blync server running. Listening on ' + config.hostname + ':' + config.port + '\n*\n*    To change status POST http://localhost/status/:status\n*\n*    Valid options: "available" | "busy" | "away" | "nodisturb" | "offline" | "rave" | "police"\n*\n*\n****************************************************************************************************\n\n');
+  console.log('\n\n**********************************************************************************************************\n*\n*\n*    Blync API listening on ' + config.hostname + ':' + config.port + '\n*\n*    POST http://localhost/status/:status\n*\n*    @param string status : required\n*    @param int    device : optional (for use with multiple blync devices) defaults to 0\n*\n*    status = ' + STATUSES_STRING + '\n*\n*\n**********************************************************************************************************\n\n');
 
-  //
-  // App Level Vars
-  //
+  /*
+   *  MIDDLEWARE
+   */
+
+  app.use(bodyParser());
+  app.use(cookieParser());
+  app.use(session({ secret: config.secret, name: 'blync-api-sid' }));
+
+  // Auth check middleware
+  function checkAuth(req, res, next) {
+    if (config.auth) {
+      if ( ! req.session.logged_in) {
+        res.send('Unauthorized user.', 403);
+      }
+      else {
+        next();
+      }
+    }
+    else {
+      next();
+    }
+  }
+
+  // Device count middleware
+  function checkDeviceCount(req, res, next) {
+    if (deviceCount == 0) {
+      res.send('No devices found.', 404);
+    }
+    else {
+      next();
+    }
+  }
 
   // Declare current interval
   var currentInterval;
@@ -34,98 +105,140 @@ if (deviceCount > 0) {
     clearInterval(currentInterval);
   };
 
-  //
-  // API
-  //
+  /*
+   *  API CALLS
+   */
 
-  // Set a color
-  app.get('/status/:status', function(req, res) {
-    // Make sure there are devices
-    if (deviceCount > 0) {
-      // Get the device
-      var device = devices[0];
-
-      // Function to set a color
-      var setColor = function(color) {
-        device.setColor(color);
-      };
-
-      // Function to send next color in interval
-      var next = function(color) {
-        device.setColor(color);
-      };
-
-      var status = req.param('status', false);
-
-      //
-      // PROCESS ARGUMENT
-      //
-
-      // If 'available' status
-      if (status == 'available') {
-        clearCurrentInterval();
-        setColor('green');
-      }
-      // If 'busy' status
-      else if (status == 'busy') {
-        clearCurrentInterval();
-        setColor('red');
-      }
-      // If 'away' status
-      else if (status == 'away') {
-        clearCurrentInterval();
-        setColor('yellow');
-      }
-      // If 'nodisturb' status
-      else if (status == 'nodisturb') {
-        clearCurrentInterval();
-        setColor('magenta');
-      }
-      // If 'offline' status
-      else if (status == 'offline') {
-        clearCurrentInterval();
-        setColor('off');
-      }
-      // If 'rave' status
-      else if (status == 'rave') {
-        clearCurrentInterval();
-        var i = 0;
-        currentInterval = setInterval(function() {
-          next(i);
-          i++;
-          if (i == 255) i = 0;
-        }, 5);
-      }
-      // If 'police' status
-      else if (status == 'police') {
-        clearCurrentInterval();
-        color = 'red';
-        currentInterval = setInterval(function() {
-          next(color);
-          if (color == 'red') color = 'white';
-          else if (color == 'white') color = 'blue';
-          else if (color == 'blue') color = 'red';
-        }, 50);
-      }
-      // If status not recognized
-      else if (status) {
-        res.send('Did not recognize status. Recognized statuses: "available" || "busy" || "nodisturb" || "away" || "offline" || "rave" || "police"', 404);
-      }
-      // If no status found
-      else {
-        res.send('No status found. Recognized statuses: "available" || "busy" || "nodisturb" || "away" || "offline" || "rave" || "police"', 404);
-      }
+  // Log in
+  app.post('/login', function(req, res) {
+    var post = req.body;
+    if (post.username == config.username && post.password == config.password) {
+      req.session.logged_in = true;
+      console.log(req.session);
+      res.send('Authenticated!', 200);
     }
     else {
-      res.send('No device found.', 404);
+      res.send('Invalid Credentials', 403);
+    }
+  });
+
+  // Log out
+  app.get('/logout', function (req, res) {
+    delete req.session.logged_in;
+    res.redirect('/login');
+  });
+
+  // Set a color
+  app.post('/status/:status', checkAuth, checkDeviceCount, function(req, res) {
+    var post = req.body;
+
+    // Get the device index if exists else 0
+    var deviceIndex = post.device || 0;
+    
+    // Get the device
+    var device = devices[deviceIndex];
+
+    // Function to set a color
+    var setColor = function(color) {
+      device.setColor(color);
+    };
+
+    // Function to send next color in interval
+    var nextColor = function(color) {
+      device.setColor(color);
+    };
+
+    // Get the status from the request
+    var status = req.param('status', '').toLowercase();
+
+    // If 'available' status
+    if (status == STATUSES.AVAILABLE) {
+      clearCurrentInterval();
+      setColor(COLORS.GREEN);
+    }
+    // If 'busy' status
+    else if (status == STATUSES.BUSY) {
+      clearCurrentInterval();
+      setColor(COLORS.RED);
+    }
+    // If 'away' status
+    else if (status == STATUSES.AWAY) {
+      clearCurrentInterval();
+      setColor(COLORS.YELLOW);
+    }
+    // If 'nodisturb' status
+    else if (status == STATUSES.NODISTURB) {
+      clearCurrentInterval();
+      setColor(COLORS.MAGENTA);
+    }
+    // If 'offline' status
+    else if (status == STATUSES.OFFLINE) {
+      clearCurrentInterval();
+      setColor(COLORS.OFF);
+    }
+    // If 'police' status
+    // rotate red/white/blue
+    else if (status == STATUSES.POLICE) {
+      clearCurrentInterval();
+      color = COLORS.RED;
+      nextColor(color);
+      currentInterval = setInterval(function() {
+        nextColor(color);
+        if (color == COLORS.RED) color = COLORS.WHITE;
+        else if (color == COLORS.WHITE) color = COLORS.BLUE;
+        else if (color == COLORS.BLUE) color = COLORS.RED;
+      }, 50);
+    }
+    // If 'rave' status
+    // rotate all colors
+    // Un Tiss, Un Tiss, Un Tiss...
+    else if (status == STATUSES.RAVE) {
+      clearCurrentInterval();
+      var i = 0;
+      nextColor(i);
+      currentInterval = setInterval(function() {
+        nextColor(i);
+        i++;
+        if (i == 255) i = 0;
+      }, 5);
+    }
+    // If 'traffic' status
+    // rotate red yellow green
+    else if (status == STATUSES.TRAFFIC) {
+      clearCurrentInterval();
+      var i = 0;
+      nextColor(COLORS.RED);
+      currentInterval = setInterval(function() {
+        i++;
+        if (i == 0) {
+          nextColor(COLORS.RED);
+        }
+        if (i == 10) {
+          nextColor(COLORS.GREEN);
+        }
+        if (i == 20) {
+          nextColor(COLORS.YELLOW);
+        }
+        if (i == 25) {
+          i = 0;
+        }
+      }, 1000);
+    }
+    // If status not recognized
+    else if (status) {
+      res.send('Did not recognize status. Recognized statuses: ' + STATUSES_STRING, 404);
+    }
+    // If no status found
+    else {
+      res.send('No status found. Recognized statuses: ' + STATUSES_STRING, 404);
     }
 
     res.send('Success!', 200);
   });
 
-  //
-  // Events
-  //
+  /*
+   *  EVENT HANDLERS
+   */
 
   // Turn all Blyncs off when you exit
   process.on( 'SIGINT', function() {
@@ -134,7 +247,4 @@ if (deviceCount > 0) {
     }  
     process.exit(0);
   });
-}
-else {
-  console.log('\n\n****************************************************************************************************\n*\n*\n*    Process Exited. No Devices Found.\n*\n*\n****************************************************************************************************\n\n');
 }
