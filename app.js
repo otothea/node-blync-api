@@ -41,7 +41,8 @@ var deviceCount = devices.length;
 
 // If there are no devices, throw error
 if (deviceCount == 0) {
-  console.log('\n\n****************************************************************************************************\n*\n*\n*    Process Exited. No Devices Found.\n*\n*\n****************************************************************************************************\n\n');
+  console.log('\n\n****************************************************************************************************\n*\n*');
+  console.log('\n*    Process Exited. No Devices Found.\n*\n*\n****************************************************************************************************\n\n');
   return;
 }
 
@@ -62,7 +63,12 @@ else {
 
   // Start Web Server
   server.listen(config.port, config.hostname);
-  console.log('\n\n**********************************************************************************************************\n*\n*\n*    Blync API listening on ' + config.hostname + ':' + config.port + '\n*\n*    POST http://localhost/status/:status\n*\n*    @param string status : required\n*    @param int    device : optional (for use with multiple blync devices) defaults to 0\n*\n*    status = ' + STATUSES_STRING + '\n*\n*\n**********************************************************************************************************\n\n');
+  console.log('\n\n**********************************************************************************************************\n*\n*');
+  console.log('\n*    Blync API listening on ' + config.hostname + ':' + config.port + '\n*');
+  console.log('\n*    POST http://localhost/status/:status\n*');
+  console.log('\n*    @param string status : required');
+  console.log('\n*    @param int    device : optional (for use with multiple blync devices) defaults to 0\n*');
+  console.log('\n*    status = ' + STATUSES_STRING + '\n*\n*\n**********************************************************************************************************\n\n');
 
   /*
    *  MIDDLEWARE
