@@ -1,0 +1,14 @@
+{
+  "name": "blync-api",
+  "version": "0.0.1",
+  "description": "Blync API",
+  "main": "index.js",
+  "dependencies": {
+    "blync": "otothea/node-blync",
+    "express": "4"
+  },
+  "devDependencies": {},
+  "author": "Oscar Armstrong",
+  "repository": "https://github.com/otothea/node-blync-api.git",
+  "license": "ISC"
+}
