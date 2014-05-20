@@ -1,5 +1,5 @@
 {
-  "name": "blync-api",
+  "name": "node-blync-api",
   "version": "0.0.1",
   "description": "Blync API",
   "main": "index.js",
