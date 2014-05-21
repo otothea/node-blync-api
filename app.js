@@ -82,7 +82,7 @@ else {
   function checkAuth(req, res, next) {
     if (config.auth) {
       if ( ! req.session.logged_in) {
-        res.send('Unauthorized user.', 403);
+        res.send('Unauthorized', 403);
       }
       else {
         next();
@@ -96,7 +96,7 @@ else {
   // Device count middleware
   function checkDeviceCount(req, res, next) {
     if (deviceCount == 0) {
-      res.send('No devices found.', 404);
+      res.send('No Devices Found', 404);
     }
     else {
       next();
@@ -116,12 +116,11 @@ else {
    */
 
   // Log in
-  app.post('/login', function(req, res) {
+  app.post('/auth', function(req, res) {
     var post = req.body;
     if (post.username == config.username && post.password == config.password) {
       req.session.logged_in = true;
-      console.log(req.session);
-      res.send('Authenticated!', 200);
+      res.send('Authenticated', 200);
     }
     else {
       res.send('Invalid Credentials', 403);
@@ -129,9 +128,9 @@ else {
   });
 
   // Log out
-  app.get('/logout', function (req, res) {
+  app.delete('/auth', function (req, res) {
     delete req.session.logged_in;
-    res.redirect('/login');
+    res.send('', 200);
   });
 
   // Set a color
@@ -155,7 +154,7 @@ else {
     };
 
     // Get the status from the request
-    var status = req.param('status', '').toLowercase();
+    var status = req.param('status', '').toLowerCase();
 
     // If 'available' status
     if (status == STATUSES.AVAILABLE) {
@@ -216,16 +215,16 @@ else {
       nextColor(COLORS.RED);
       currentInterval = setInterval(function() {
         i++;
-        if (i == 0) {
+        if (i == 1) {
           nextColor(COLORS.RED);
         }
         if (i == 10) {
           nextColor(COLORS.GREEN);
         }
-        if (i == 20) {
+        if (i == 17) {
           nextColor(COLORS.YELLOW);
         }
-        if (i == 25) {
+        if (i == 21) {
           i = 0;
         }
       }, 1000);
@@ -239,7 +238,7 @@ else {
       res.send('No status found. Recognized statuses: ' + STATUSES_STRING, 404);
     }
 
-    res.send('Success!', 200);
+    res.send('Success', 200);
   });
 
   /*
