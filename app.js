@@ -69,6 +69,11 @@ else {
   console.log('     Documentation: https://github.com/otothea/node-blync-api#api-to-control-a-blync-device');
   console.log('\n\n************************************************************************************************\n\n');
 
+  // Set all devices to green to show we have started up
+  for (var i = 0; i < deviceCount; i++) {
+    devices[i].setColor(COLORS.GREEN);
+  }
+
   /*
    *  MIDDLEWARE
    */
@@ -107,19 +112,22 @@ else {
    */
 
   // Function to set a color
-  var setDeviceColor = function(index, color) {
-    if (typeof(devices[index]) != 'undefined') {
-      devices[index].setColor(color);
+  var setDeviceColor = function(_index, _color) {
+    if (typeof(devices[_index]) != 'undefined') {
+      devices[_index].setColor(_color);
     }
   };
 
-  // Declare current interval
-  var intervals = [];
+  // Intervals object
+  // deviceIndex => interval
+  var intervals = {};
 
   // Clear the current interval
-  var clearDeviceInterval = function(index) {
-    if (typeof(intervals[index]) != 'undefined') {
-      clearInterval(intervals[index]);
+  var clearDeviceInterval = function(_index) {
+    var interval = intervals[_index];
+    if (typeof(interval) != 'undefined') {
+      clearInterval(interval);
+      delete intervals[_index];
     }
   };
 
@@ -281,9 +289,9 @@ else {
    */
 
   // Start the listener
-  skyper.desktop.on('notification', function(body) {
+  skyper.desktop.on('notification', function(_body) {
     if (skypeIndexes.length > 0) {
-      body = body.split(' ');
+      var body = _body.split(' ');
       var type = body[0];
 
       if (type === 'USERSTATUS') {
@@ -310,6 +318,7 @@ else {
         // Set color on all registered skype devices
         for (var i = 0, length = skypeIndexes.length; i < length; i++) {
           deviceIndex = skypeIndexes[i];
+          clearDeviceInterval(deviceIndex);
           setDeviceColor(deviceIndex, color);
         }
       }
