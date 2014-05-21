@@ -1,0 +1,26 @@
+doctype html
+html(lang="en")
+  head
+    title Home | Blync GUI
+  body
+    h1 Blync Controls
+    hr
+    form(role='form', class='form-horizontal', id='status-form')
+      h3 Set Status
+      p
+        select#status-input
+          option(value='available') AVAILABLE
+          option(value='away') AWAY
+          option(value='busy') BUSY
+          option(value='nodisturb') DO NOT DISTURB
+          option(value='offline') OFFLINE
+          option(value='rave') RAVE
+          option(value='police') POLICE
+          option(value='traffic') TRAFFIC
+      h3 Skype Listener
+      p
+        input(type='radio', name='skype', id='skype-on', value='0')
+        label(for='skype-on') &nbsp;Enabled
+      p
+        input(type='radio', name='skype', id='skype-off', value='1')
+        label(for='skype-off') &nbsp;Disabled

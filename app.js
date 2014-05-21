@@ -1,34 +1,4 @@
 /*
- *  APP LEVEL CONSTANTS
- */
-
-// Available statuses string
-const STATUSES_STRING = '"available" | "busy" | "nodisturb" | "away" | "offline" | "rave" | "police" | "traffic"';
-
-// Statuses enum
-const STATUSES = {
-  AVAILABLE: 'available',
-  AWAY: 'away',
-  NODISTURB: 'nodisturb',
-  BUSY: 'busy',
-  OFFLINE: 'offline',
-  POLICE: 'police',
-  RAVE: 'rave',
-  TRAFFIC: 'traffic',
-};
-
-const COLORS = {
-  OFF: 'off',
-  WHITE: 'white',
-  MAGENTA: 'magenta',
-  BLUE: 'blue',
-  CYAN: 'cyan',
-  GREEN: 'green',
-  RED: 'red',
-  YELLOW: 'yellow',
-};
-
-/*
  *  SETUP APP
  */
 
@@ -49,6 +19,36 @@ if (deviceCount == 0) {
 
 else {
   /*
+   *  CONSTANTS
+   */
+
+  // Available statuses string
+  const STATUSES_STRING = '"available" | "busy" | "nodisturb" | "away" | "offline" | "rave" | "police" | "traffic"';
+
+  // Statuses enum
+  const STATUSES = {
+    AVAILABLE: 'available',
+    AWAY: 'away',
+    NODISTURB: 'nodisturb',
+    BUSY: 'busy',
+    OFFLINE: 'offline',
+    POLICE: 'police',
+    RAVE: 'rave',
+    TRAFFIC: 'traffic',
+  };
+
+  const COLORS = {
+    OFF: 'off',
+    WHITE: 'white',
+    MAGENTA: 'magenta',
+    BLUE: 'blue',
+    CYAN: 'cyan',
+    GREEN: 'green',
+    RED: 'red',
+    YELLOW: 'yellow',
+  };
+
+  /*
    *  START SERVER
    */
 
@@ -64,12 +64,12 @@ else {
 
   // Start Web Server
   server.listen(config.port, config.hostname);
-  console.log('\n\n************************************************************************************************\n\n');
+  console.log('\n\n******************************************************************\n\n');
   console.log('     Blync API listening on ' + config.hostname + ':' + config.port + '\n');
-  console.log('     Documentation: https://github.com/otothea/node-blync-api#api-to-control-a-blync-device');
-  console.log('\n\n************************************************************************************************\n\n');
+  console.log('     Documentation: https://github.com/otothea/node-blync-api');
+  console.log('\n\n******************************************************************\n\n');
 
-  // Set all devices to green to show we have started up
+  // Set all devices to green to show we have started up successfuly
   for (var i = 0; i < deviceCount; i++) {
     devices[i].setColor(COLORS.GREEN);
   }
@@ -78,30 +78,35 @@ else {
    *  MIDDLEWARE
    */
 
+  app.set('view engine', 'jade');
+  app.use(express.static(__dirname + '/views'));
   app.use(bodyParser());
   app.use(cookieParser());
   app.use(session({ secret: config.secret, name: 'blync-api-sid' }));
 
   // Auth check middleware
   function checkAuth(req, res, next) {
+    // If auth is required
     if (config.auth) {
+      // If user is NOT logged in
       if ( ! req.session.logged_in) {
-        res.send('Unauthorized', 403);
+        // If POST | PUT | DELETE request
+        if (req.method == 'POST' || req.method == 'PUT' || req.method == 'DELETE') {
+          // Restful response
+          res.send('Unauthorized', 403);
+        }
+        // If GET request
+        else if (req.method == 'GET') {
+          // Redirect to login page
+          res.redirect('/login');
+        }
       }
+      // User is authenticated, continue
       else {
         next();
       }
     }
-    else {
-      next();
-    }
-  }
-
-  // Device count middleware
-  function checkDeviceCount(req, res, next) {
-    if (deviceCount == 0) {
-      res.send('No Devices Found', 404);
-    }
+    // No auth needed, continue
     else {
       next();
     }
@@ -113,8 +118,9 @@ else {
 
   // Function to set a color
   var setDeviceColor = function(_index, _color) {
-    if (typeof(devices[_index]) != 'undefined') {
-      devices[_index].setColor(_color);
+    var device = devices[_index];
+    if (typeof(device) != 'undefined' && device) {
+      device.setColor(_color);
     }
   };
 
@@ -125,7 +131,7 @@ else {
   // Clear the current interval
   var clearDeviceInterval = function(_index) {
     var interval = intervals[_index];
-    if (typeof(interval) != 'undefined') {
+    if (typeof(interval) != 'undefined' && interval) {
       clearInterval(interval);
       delete intervals[_index];
     }
@@ -135,16 +141,32 @@ else {
   var skypeIndexes = [];
 
   /*
+   *  WEB PAGES
+   */
+
+  // Web Login
+  app.get('/login', function(req, res) {
+    res.render('login', 200);
+  });
+
+  // Web GUI
+  app.get('/', checkAuth, function(req, res) {
+    res.render('index', 200);
+  });
+
+  /*
    *  API CALLS
    */
 
   // Log in
   app.post('/auth', function(req, res) {
     var post = req.body;
+    // Username and Password are valid
     if (post.username == config.username && post.password == config.password) {
       req.session.logged_in = true;
       res.send('Authenticated', 200);
     }
+    // Invalid attempt
     else {
       res.send('Invalid Credentials', 403);
     }
@@ -157,7 +179,7 @@ else {
   });
 
   // Set a color
-  app.post('/status/:status', checkAuth, checkDeviceCount, function(req, res) {
+  app.post('/status/:status', checkAuth, function(req, res) {
     var post = req.body;
 
     // Get the device index if exists else 0
@@ -166,93 +188,92 @@ else {
     // Get the status from the request
     var status = req.param('status', '').toLowerCase();
 
-    // If 'available' status
-    if (status == STATUSES.AVAILABLE) {
-      clearDeviceInterval(deviceIndex);
-      setDeviceColor(deviceIndex, COLORS.GREEN);
-    }
-    // If 'busy' status
-    else if (status == STATUSES.BUSY) {
-      clearDeviceInterval(deviceIndex);
-      setDeviceColor(deviceIndex, COLORS.RED);
-    }
-    // If 'away' status
-    else if (status == STATUSES.AWAY) {
-      clearDeviceInterval(deviceIndex);
-      setDeviceColor(deviceIndex, COLORS.YELLOW);
-    }
-    // If 'nodisturb' status
-    else if (status == STATUSES.NODISTURB) {
-      clearDeviceInterval(deviceIndex);
-      setDeviceColor(deviceIndex, COLORS.MAGENTA);
-    }
-    // If 'offline' status
-    else if (status == STATUSES.OFFLINE) {
-      clearDeviceInterval(deviceIndex);
-      setDeviceColor(deviceIndex, COLORS.OFF);
-    }
-    // If 'police' status
-    // rotate red/white/blue
-    else if (status == STATUSES.POLICE) {
-      clearDeviceInterval(deviceIndex);
-      var color = COLORS.RED;
-      setDeviceColor(deviceIndex, color);
-      intervals[deviceIndex] = setInterval(function() {
+    switch (status) {
+      case STATUSES.AVAILABLE:
+        clearDeviceInterval(deviceIndex);
+        setDeviceColor(deviceIndex, COLORS.GREEN);
+        break;
+
+      case STATUSES.BUSY:
+        clearDeviceInterval(deviceIndex);
+        setDeviceColor(deviceIndex, COLORS.RED);
+        break;
+
+      case STATUSES.AWAY:
+        clearDeviceInterval(deviceIndex);
+        setDeviceColor(deviceIndex, COLORS.YELLOW);
+        break;
+
+      case STATUSES.NODISTURB:
+        clearDeviceInterval(deviceIndex);
+        setDeviceColor(deviceIndex, COLORS.MAGENTA);
+        break;
+
+      case STATUSES.OFFLINE:
+        clearDeviceInterval(deviceIndex);
+        setDeviceColor(deviceIndex, COLORS.OFF);
+        break;
+
+      case STATUSES.POLICE:
+        clearDeviceInterval(deviceIndex);
+        var color = COLORS.RED;
         setDeviceColor(deviceIndex, color);
-        if (color == COLORS.RED) color = COLORS.WHITE;
-        else if (color == COLORS.WHITE) color = COLORS.BLUE;
-        else if (color == COLORS.BLUE) color = COLORS.RED;
-      }, 50);
-    }
-    // If 'rave' status
-    // rotate all colors
-    // Un Tiss, Un Tiss, Un Tiss...
-    else if (status == STATUSES.RAVE) {
-      clearDeviceInterval(deviceIndex);
-      var i = 0;
-      setDeviceColor(deviceIndex, i);
-      intervals[deviceIndex] = setInterval(function() {
+        intervals[deviceIndex] = setInterval(function() {
+          setDeviceColor(deviceIndex, color);
+          if (color == COLORS.RED) color = COLORS.WHITE;
+          else if (color == COLORS.WHITE) color = COLORS.BLUE;
+          else if (color == COLORS.BLUE) color = COLORS.RED;
+        }, 50);
+        break;
+
+      case STATUSES.RAVE:
+        clearDeviceInterval(deviceIndex);
+        var i = 0;
         setDeviceColor(deviceIndex, i);
-        i++;
-        if (i == 255) i = 0;
-      }, 1);
-    }
-    // If 'traffic' status
-    // rotate red yellow green
-    else if (status == STATUSES.TRAFFIC) {
-      clearDeviceInterval(deviceIndex);
-      var i = 0;
-      setDeviceColor(deviceIndex, COLORS.RED);
-      intervals[deviceIndex] = setInterval(function() {
-        i++;
-        if (i == 1) {
-          setDeviceColor(deviceIndex, COLORS.RED);
+        intervals[deviceIndex] = setInterval(function() {
+          setDeviceColor(deviceIndex, i);
+          i++;
+          if (i == 255) i = 0;
+        }, 1);
+        break;
+
+      case STATUSES.TRAFFIC:
+        clearDeviceInterval(deviceIndex);
+        var i = 0;
+        setDeviceColor(deviceIndex, COLORS.RED);
+        intervals[deviceIndex] = setInterval(function() {
+          i++;
+          if (i == 1) {
+            setDeviceColor(deviceIndex, COLORS.RED);
+          }
+          if (i == 10) {
+            setDeviceColor(deviceIndex, COLORS.GREEN);
+          }
+          if (i == 17) {
+            setDeviceColor(deviceIndex, COLORS.YELLOW);
+          }
+          if (i == 21) {
+            i = 0;
+          }
+        }, 1000);
+        break;
+
+      default:
+        // If there is an unrecognized status
+        if (status) {
+          res.send('Did not recognize status. Recognized statuses: ' + STATUSES_STRING, 404);
         }
-        if (i == 10) {
-          setDeviceColor(deviceIndex, COLORS.GREEN);
+        // If no status found
+        else {
+          res.send('No status found. Recognized statuses: ' + STATUSES_STRING, 404);
         }
-        if (i == 17) {
-          setDeviceColor(deviceIndex, COLORS.YELLOW);
-        }
-        if (i == 21) {
-          i = 0;
-        }
-      }, 1000);
-    }
-    // If status not recognized
-    else if (status) {
-      res.send('Did not recognize status. Recognized statuses: ' + STATUSES_STRING, 404);
-    }
-    // If no status found
-    else {
-      res.send('No status found. Recognized statuses: ' + STATUSES_STRING, 404);
     }
 
     res.send('Success', 200);
   });
 
   // Listen Skype
-  app.post('/skype', checkAuth, checkDeviceCount, function(req, res) {
+  app.post('/skype', checkAuth, function(req, res) {
     var post = req.body;
 
     // Get the device index if exists else 0
@@ -268,7 +289,7 @@ else {
   });
 
   // Stop Listening Skype
-  app.delete('/skype', checkAuth, checkDeviceCount, function(req, res) {
+  app.delete('/skype', checkAuth, function(req, res) {
     var post = req.body;
 
     // Get the device index if exists else 0
@@ -288,7 +309,7 @@ else {
    *  EVENT HANDLERS
    */
 
-  // Start the listener
+  // Listen for skype desktop notifications
   skyper.desktop.on('notification', function(_body) {
     if (skypeIndexes.length > 0) {
       var body = _body.split(' ');
@@ -313,7 +334,7 @@ else {
           case 'OFFLINE':
             color = COLORS.OFF;
             break;
-        };
+        }
 
         // Set color on all registered skype devices
         for (var i = 0, length = skypeIndexes.length; i < length; i++) {
