@@ -34,6 +34,7 @@ const COLORS = {
 
 // Require blync
 var blync = require('blync');
+var skyper = require('skyper');
 
 // How many Blyncs are hooked up?
 var devices = blync.getDevices();
@@ -111,12 +112,49 @@ else {
     }
   }
 
+  /*
+   *  SERVER LEVEL VARS
+   */
+
+  // Declare the device
+  var device;
+
+  // Function to set a color
+  var setColor = function(color) {
+    device.setColor(color);
+  };
+
   // Declare current interval
   var currentInterval;
 
   // Clear the current interval
   var clearCurrentInterval = function() {
     clearInterval(currentInterval);
+  };
+
+  // Callback for skype notifications
+  var handleSkypeNotification = function(body) {
+    body = body.split(' ');
+    var type = body[0];
+    var status = body[1];
+
+    switch(status) {
+      case 'DND':
+        setColor(COLORS.MAGENTA);
+        break;
+      case 'AWAY':
+        setColor(COLORS.YELLOW);
+        break;
+      case 'INVISIBLE':
+        setColor(COLORS.OFF);
+        break;
+      case 'OFFLINE':
+        setColor(COLORS.OFF);
+        break;
+      default:
+        setColor(COLORS.GREEN);
+        break;
+    };
   };
 
   /*
@@ -149,17 +187,7 @@ else {
     var deviceIndex = post.device || 0;
     
     // Get the device
-    var device = devices[deviceIndex];
-
-    // Function to set a color
-    var setColor = function(color) {
-      device.setColor(color);
-    };
-
-    // Function to send next color in interval
-    var nextColor = function(color) {
-      device.setColor(color);
-    };
+    device = devices[deviceIndex];
 
     // Get the status from the request
     var status = req.param('status', '').toLowerCase();
@@ -194,9 +222,9 @@ else {
     else if (status == STATUSES.POLICE) {
       clearCurrentInterval();
       color = COLORS.RED;
-      nextColor(color);
+      setColor(color);
       currentInterval = setInterval(function() {
-        nextColor(color);
+        setColor(color);
         if (color == COLORS.RED) color = COLORS.WHITE;
         else if (color == COLORS.WHITE) color = COLORS.BLUE;
         else if (color == COLORS.BLUE) color = COLORS.RED;
@@ -208,9 +236,9 @@ else {
     else if (status == STATUSES.RAVE) {
       clearCurrentInterval();
       var i = 0;
-      nextColor(i);
+      setColor(i);
       currentInterval = setInterval(function() {
-        nextColor(i);
+        setColor(i);
         i++;
         if (i == 255) i = 0;
       }, 1);
@@ -220,17 +248,17 @@ else {
     else if (status == STATUSES.TRAFFIC) {
       clearCurrentInterval();
       var i = 0;
-      nextColor(COLORS.RED);
+      setColor(COLORS.RED);
       currentInterval = setInterval(function() {
         i++;
         if (i == 1) {
-          nextColor(COLORS.RED);
+          setColor(COLORS.RED);
         }
         if (i == 10) {
-          nextColor(COLORS.GREEN);
+          setColor(COLORS.GREEN);
         }
         if (i == 17) {
-          nextColor(COLORS.YELLOW);
+          setColor(COLORS.YELLOW);
         }
         if (i == 21) {
           i = 0;
@@ -246,6 +274,27 @@ else {
       res.send('No status found. Recognized statuses: ' + STATUSES_STRING, 404);
     }
 
+    res.send('Success', 200);
+  });
+
+  // Listen Skype
+  app.post('/skype', checkAuth, checkDeviceCount, function(req, res) {
+    var post = req.body;
+
+    // Get the device index if exists else 0
+    var deviceIndex = post.device || 0;
+    
+    // Get the device
+    device = devices[deviceIndex];
+
+    skyper.desktop.on('notification', handleSkypeNotification);
+
+    res.send('Success', 200);
+  });
+
+  // Stop Listening Skype
+  app.delete('/skype', checkAuth, checkDeviceCount, function(req, res) {
+    skyper.desktop.removeListener('notification', handleSkypeNotification);
     res.send('Success', 200);
   });
 

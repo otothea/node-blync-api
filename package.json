@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "blync": "otothea/node-blync",
+    "skyper": "~0",
     "express": "~4",
     "connect": "~3",
     "body-parser": "~1",
