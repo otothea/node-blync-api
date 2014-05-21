@@ -65,10 +65,18 @@ else {
   server.listen(config.port, config.hostname);
   console.log('\n\n**********************************************************************************************************\n*\n*');
   console.log('*    Blync API listening on ' + config.hostname + ':' + config.port + '\n*');
-  console.log('*    POST http://localhost/status/:status\n*');
+  console.log('*    // Authenticate');
+  console.log('*    POST http://' + config.hostname + ':' + config.port + '/auth\n*');
+  console.log('*    @param string username : required');
+  console.log('*    @param string password : required\n*');
+  console.log('*    // Unauthenticate');
+  console.log('*    DELETE http://' + config.hostname + ':' + config.port + '/auth\n*');
+  console.log('*    // Update Status');
+  console.log('*    POST http://' + config.hostname + ':' + config.port + '/status/:status\n*');
   console.log('*    @param string status : required');
   console.log('*    @param int    device : optional (for use with multiple blync devices) defaults to 0\n*');
-  console.log('*    status = ' + STATUSES_STRING + '\n*\n*\n**********************************************************************************************************\n\n');
+  console.log('*    status = ' + STATUSES_STRING);
+  console.log('*\n*\n**********************************************************************************************************\n\n');
 
   /*
    *  MIDDLEWARE
@@ -205,7 +213,7 @@ else {
         nextColor(i);
         i++;
         if (i == 255) i = 0;
-      }, 5);
+      }, 1);
     }
     // If 'traffic' status
     // rotate red yellow green
