@@ -16,18 +16,18 @@ API to control a blync device
 
 ### API Docs:
 
-Authenticate:
+Authenticate: Only Needed if config.auth = true
 
     POST http://localhost:8000/auth
 
     @param string username : required
     @param string password : required
 
-Unauthenticate:
+Unauthenticate: Only Needed if config.auth = true
 
     DELETE http://localhost:8000/auth
 
-Update Status:
+Update Status: Auth required if config.auth = true
 
     POST http://localhost:8000/status/:status
 
