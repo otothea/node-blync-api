@@ -64,20 +64,10 @@ else {
 
   // Start Web Server
   server.listen(config.port, config.hostname);
-  console.log('\n\n**********************************************************************************************************\n*\n*');
-  console.log('*    Blync API listening on ' + config.hostname + ':' + config.port + '\n*');
-  console.log('*    // Authenticate');
-  console.log('*    POST http://' + config.hostname + ':' + config.port + '/auth\n*');
-  console.log('*    @param string username : required');
-  console.log('*    @param string password : required\n*');
-  console.log('*    // Unauthenticate');
-  console.log('*    DELETE http://' + config.hostname + ':' + config.port + '/auth\n*');
-  console.log('*    // Update Status');
-  console.log('*    POST http://' + config.hostname + ':' + config.port + '/status/:status\n*');
-  console.log('*    @param string status : required');
-  console.log('*    @param int    device : optional (for use with multiple blync devices) defaults to 0\n*');
-  console.log('*    status = ' + STATUSES_STRING);
-  console.log('*\n*\n**********************************************************************************************************\n\n');
+  console.log('\n\n************************************************************************************************\n\n');
+  console.log('     Blync API listening on ' + config.hostname + ':' + config.port + '\n');
+  console.log('     Documentation: https://github.com/otothea/node-blync-api#api-to-control-a-blync-device');
+  console.log('\n\n************************************************************************************************\n\n');
 
   /*
    *  MIDDLEWARE

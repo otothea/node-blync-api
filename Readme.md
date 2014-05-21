@@ -23,7 +23,7 @@ Authenticate (only needed if config.auth = true)
     @param string username : required
     @param string password : required
 
-Unauthenticate (only needed if config.auth = true
+Unauthenticate (only needed if config.auth = true)
 
     DELETE http://localhost:8000/auth
 
