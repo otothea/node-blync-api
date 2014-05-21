@@ -285,33 +285,33 @@ else {
     if (skypeIndexes.length > 0) {
       body = body.split(' ');
       var type = body[0];
-      var status = body[1];
 
-      var color = COLORS.GREEN;
+      if (type === 'USERSTATUS') {
+        var status = body[1];
 
-      // Get color
-      switch(status) {
-        case 'DND':
-          color = COLORS.RED;
-          break;
-        case 'AWAY':
-          color = COLORS.YELLOW;
-          break;
-        case 'INVISIBLE':
-          color = COLORS.OFF;
-          break;
-        case 'OFFLINE':
-          color = COLORS.OFF;
-          break;
-        default:
-          color = COLORS.GREEN;
-          break;
-      };
+        var color = COLORS.GREEN;
 
-      // Set color on all registered skype devices
-      for (var i = 0, length = skypeIndexes.length; i < length; i++) {
-        deviceIndex = skypeIndexes[i];
-        setDeviceColor(deviceIndex, color);
+        // Get color
+        switch(status) {
+          case 'DND':
+            color = COLORS.RED;
+            break;
+          case 'AWAY':
+            color = COLORS.YELLOW;
+            break;
+          case 'INVISIBLE':
+            color = COLORS.OFF;
+            break;
+          case 'OFFLINE':
+            color = COLORS.OFF;
+            break;
+        };
+
+        // Set color on all registered skype devices
+        for (var i = 0, length = skypeIndexes.length; i < length; i++) {
+          deviceIndex = skypeIndexes[i];
+          setDeviceColor(deviceIndex, color);
+        }
       }
     }
   });
