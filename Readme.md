@@ -3,7 +3,7 @@ API to control a blync device
 
 ### Config:
 
-/config/app.js:
+config/app.js:
 
     {
       hostname:   'localhost',
@@ -12,7 +12,7 @@ API to control a blync device
       username:   'changeme',
       password:   'changeme',
       secret:     'CHANGEME',
-    };
+    }
 
 ### API Docs:
 
@@ -23,9 +23,11 @@ Authenticate: Only Needed if config.auth = true
     @param string username : required
     @param string password : required
 
+
 Unauthenticate: Only Needed if config.auth = true
 
     DELETE http://localhost:8000/auth
+
 
 Update Status: Auth required if config.auth = true
 
