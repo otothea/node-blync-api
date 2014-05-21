@@ -16,20 +16,18 @@ config/app.js:
 
 ### API Docs:
 
-Authenticate: Only Needed if config.auth = true
+Authenticate (only needed if config.auth = true)
 
     POST http://localhost:8000/auth
 
     @param string username : required
     @param string password : required
 
-
-Unauthenticate: Only Needed if config.auth = true
+Unauthenticate (only needed if config.auth = true
 
     DELETE http://localhost:8000/auth
 
-
-Update Status: Auth required if config.auth = true
+Update Status (auth required if config.auth = true)
 
     POST http://localhost:8000/status/:status
 
