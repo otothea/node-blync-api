@@ -106,46 +106,25 @@ else {
    *  SERVER LEVEL VARS
    */
 
-  // Declare the device
-  var device;
-
   // Function to set a color
-  var setColor = function(color) {
-    device.setColor(color);
+  var setDeviceColor = function(index, color) {
+    if (typeof(devices[index]) != 'undefined') {
+      devices[index].setColor(color);
+    }
   };
 
   // Declare current interval
-  var currentInterval;
+  var intervals = [];
 
   // Clear the current interval
-  var clearCurrentInterval = function() {
-    clearInterval(currentInterval);
+  var clearDeviceInterval = function(index) {
+    if (typeof(intervals[index]) != 'undefined') {
+      clearInterval(intervals[index]);
+    }
   };
 
-  // Callback for skype notifications
-  var handleSkypeNotification = function(body) {
-    body = body.split(' ');
-    var type = body[0];
-    var status = body[1];
-
-    switch(status) {
-      case 'DND':
-        setColor(COLORS.MAGENTA);
-        break;
-      case 'AWAY':
-        setColor(COLORS.YELLOW);
-        break;
-      case 'INVISIBLE':
-        setColor(COLORS.OFF);
-        break;
-      case 'OFFLINE':
-        setColor(COLORS.OFF);
-        break;
-      default:
-        setColor(COLORS.GREEN);
-        break;
-    };
-  };
+  // Devices that should update from skype
+  var skypeIndexes = [];
 
   /*
    *  API CALLS
@@ -176,45 +155,42 @@ else {
     // Get the device index if exists else 0
     var deviceIndex = post.device || 0;
     
-    // Get the device
-    device = devices[deviceIndex];
-
     // Get the status from the request
     var status = req.param('status', '').toLowerCase();
 
     // If 'available' status
     if (status == STATUSES.AVAILABLE) {
-      clearCurrentInterval();
-      setColor(COLORS.GREEN);
+      clearDeviceInterval(deviceIndex);
+      setDeviceColor(deviceIndex, COLORS.GREEN);
     }
     // If 'busy' status
     else if (status == STATUSES.BUSY) {
-      clearCurrentInterval();
-      setColor(COLORS.RED);
+      clearDeviceInterval(deviceIndex);
+      setDeviceColor(deviceIndex, COLORS.RED);
     }
     // If 'away' status
     else if (status == STATUSES.AWAY) {
-      clearCurrentInterval();
-      setColor(COLORS.YELLOW);
+      clearDeviceInterval(deviceIndex);
+      setDeviceColor(deviceIndex, COLORS.YELLOW);
     }
     // If 'nodisturb' status
     else if (status == STATUSES.NODISTURB) {
-      clearCurrentInterval();
-      setColor(COLORS.MAGENTA);
+      clearDeviceInterval(deviceIndex);
+      setDeviceColor(deviceIndex, COLORS.MAGENTA);
     }
     // If 'offline' status
     else if (status == STATUSES.OFFLINE) {
-      clearCurrentInterval();
-      setColor(COLORS.OFF);
+      clearDeviceInterval(deviceIndex);
+      setDeviceColor(deviceIndex, COLORS.OFF);
     }
     // If 'police' status
     // rotate red/white/blue
     else if (status == STATUSES.POLICE) {
-      clearCurrentInterval();
-      color = COLORS.RED;
-      setColor(color);
-      currentInterval = setInterval(function() {
-        setColor(color);
+      clearDeviceInterval(deviceIndex);
+      var color = COLORS.RED;
+      setDeviceColor(deviceIndex, color);
+      intervals[deviceIndex] = setInterval(function() {
+        setDeviceColor(deviceIndex, color);
         if (color == COLORS.RED) color = COLORS.WHITE;
         else if (color == COLORS.WHITE) color = COLORS.BLUE;
         else if (color == COLORS.BLUE) color = COLORS.RED;
@@ -224,11 +200,11 @@ else {
     // rotate all colors
     // Un Tiss, Un Tiss, Un Tiss...
     else if (status == STATUSES.RAVE) {
-      clearCurrentInterval();
+      clearDeviceInterval(deviceIndex);
       var i = 0;
-      setColor(i);
-      currentInterval = setInterval(function() {
-        setColor(i);
+      setDeviceColor(deviceIndex, i);
+      intervals[deviceIndex] = setInterval(function() {
+        setDeviceColor(deviceIndex, i);
         i++;
         if (i == 255) i = 0;
       }, 1);
@@ -236,19 +212,19 @@ else {
     // If 'traffic' status
     // rotate red yellow green
     else if (status == STATUSES.TRAFFIC) {
-      clearCurrentInterval();
+      clearDeviceInterval(deviceIndex);
       var i = 0;
-      setColor(COLORS.RED);
-      currentInterval = setInterval(function() {
+      setDeviceColor(deviceIndex, COLORS.RED);
+      intervals[deviceIndex] = setInterval(function() {
         i++;
         if (i == 1) {
-          setColor(COLORS.RED);
+          setDeviceColor(deviceIndex, COLORS.RED);
         }
         if (i == 10) {
-          setColor(COLORS.GREEN);
+          setDeviceColor(deviceIndex, COLORS.GREEN);
         }
         if (i == 17) {
-          setColor(COLORS.YELLOW);
+          setDeviceColor(deviceIndex, COLORS.YELLOW);
         }
         if (i == 21) {
           i = 0;
@@ -273,24 +249,72 @@ else {
 
     // Get the device index if exists else 0
     var deviceIndex = post.device || 0;
-    
-    // Get the device
-    device = devices[deviceIndex];
 
-    skyper.desktop.on('notification', handleSkypeNotification);
+    // If it's not already set
+    if (skypeIndexes.indexOf(deviceIndex) < 0) {
+      // Add to skype index array
+      skypeIndexes.push(deviceIndex);
+    }
 
     res.send('Success', 200);
   });
 
   // Stop Listening Skype
   app.delete('/skype', checkAuth, checkDeviceCount, function(req, res) {
-    skyper.desktop.removeListener('notification', handleSkypeNotification);
+    var post = req.body;
+
+    // Get the device index if exists else 0
+    var deviceIndex = post.device || 0;
+    
+    // If device exists in skype indexes
+    var index = skypeIndexes.indexOf(deviceIndex);
+    if (index > -1) {
+      // Remove from skype index array
+      skypeIndexes.splice(index, 1);
+    }
+
     res.send('Success', 200);
   });
 
   /*
    *  EVENT HANDLERS
    */
+
+  // Start the listener
+  skyper.desktop.on('notification', function(body) {
+    if (skypeIndexes.length > 0) {
+      body = body.split(' ');
+      var type = body[0];
+      var status = body[1];
+
+      var color = COLORS.GREEN;
+
+      // Get color
+      switch(status) {
+        case 'DND':
+          color = COLORS.RED;
+          break;
+        case 'AWAY':
+          color = COLORS.YELLOW;
+          break;
+        case 'INVISIBLE':
+          color = COLORS.OFF;
+          break;
+        case 'OFFLINE':
+          color = COLORS.OFF;
+          break;
+        default:
+          color = COLORS.GREEN;
+          break;
+      };
+
+      // Set color on all registered skype devices
+      for (var i = 0, length = skypeIndexes.length; i < length; i++) {
+        deviceIndex = skypeIndexes[i];
+        setDeviceColor(deviceIndex, color);
+      }
+    }
+  });
 
   // Turn all Blyncs off when you exit
   process.on( 'SIGINT', function() {
