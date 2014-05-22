@@ -23,7 +23,7 @@ else {
    */
 
   // Available statuses string
-  const STATUSES_STRING = '"available" | "busy" | "nodisturb" | "away" | "offline" | "rave" | "police" | "traffic"';
+  const STATUSES_STRING = '"available" | "busy" | "nodisturb" | "away" | "offline" | "rave" | "police" | "traffic" | "strobe"';
 
   // Statuses enum
   const STATUSES = {
@@ -35,6 +35,7 @@ else {
     POLICE: 'police',
     RAVE: 'rave',
     TRAFFIC: 'traffic',
+    STROBE: 'strobe',
   };
 
   const COLORS = {
@@ -146,12 +147,17 @@ else {
 
   // Web Login
   app.get('/login', function(req, res) {
-    res.render('login', 200);
+    res.render('login', {
+      title: 'Login'
+    });
   });
 
   // Web GUI
   app.get('/', checkAuth, function(req, res) {
-    res.render('index', 200);
+    res.render('index', {
+      title: 'Home',
+      deviceCount: deviceCount
+    });
   });
 
   /*
@@ -234,6 +240,17 @@ else {
           setDeviceColor(deviceIndex, i);
           i++;
           if (i == 255) i = 0;
+        }, 1);
+        break;
+
+      case STATUSES.STROBE:
+        clearDeviceInterval(deviceIndex);
+        var color = COLORS.WHITE;
+        setDeviceColor(deviceIndex, color);
+        intervals[deviceIndex] = setInterval(function() {
+          setDeviceColor(deviceIndex, color);
+          if (color == COLORS.WHITE) color = COLORS.OFF;
+          else if (color == COLORS.OFF) color = COLORS.WHITE;
         }, 1);
         break;
 

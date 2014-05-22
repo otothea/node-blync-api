@@ -1,16 +1,35 @@
-doctype html
-html(lang="en")
-  head
-    title Login | Blync GUI
-  body
-    h1 Login
-    hr
-    form(role='form', class='form-horizontal', id='login-form')
-      h3 Username
-      p
-        input(type='text', name='username', id='username-input')
-      h3 Password
-      p
-        input(type='password', name='password', id='password-input')
-      p
-        button Submit
+extends base
+
+block content
+  h1 Login
+  hr
+  form(role='form', class='form', id='login-form')
+    div.form-group
+      label(for='username-input') Username
+      input.form-control(type='text', name='username', id='username-input')
+    div.form-group
+      label(for='password-input') Password
+      input.form-control(type='password', name='password', id='password-input')
+    div.form-group
+      button.btn.btn-primary Submit
+
+  script(type='text/javascript').
+    $('#login-form').on('submit', function(_e) {
+      _e.preventDefault();
+
+      $.ajax({
+        method: 'POST',
+        url: '/auth',
+        data: {
+          username: $('#username-input').val(),
+          password: $('#password-input').val()
+        },
+        success: function(data) {
+          console.log('SUCCESS : ' + data);
+          location.href = '/';
+        },
+        error: function(data) {
+          console.log('ERROR : ' + data.statusText);
+        }
+      });
+    });
