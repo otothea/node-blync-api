@@ -4,7 +4,6 @@
 
 // Require blync
 var blync = require('blync');
-var skyper = require('skyper');
 
 // How many Blyncs are hooked up?
 var devices = blync.getDevices();
@@ -16,8 +15,8 @@ if (deviceCount == 0) {
   console.log('*    Process Exited. No Devices Found.\n*\n*\n****************************************************************************************************\n\n');
   return;
 }
-
 else {
+
   /*
    *  CONSTANTS
    */
@@ -157,7 +156,7 @@ else {
     res.render('index', {
       title: 'Home',
       deviceCount: deviceCount,
-      config: config
+      skype: config.skype
     });
   });
 
@@ -290,8 +289,14 @@ else {
     res.send('Success', 200);
   });
 
+  /*
+   *  SKYPE
+   */
+
   // Start the skype stuff if config says so
   if (config.skype) {
+    var skyper = require('skyper');
+
     // Listen Skype
     app.post('/skype', checkAuth, function(req, res) {
       if (skypeFound) {

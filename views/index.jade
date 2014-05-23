@@ -3,7 +3,8 @@ extends base
 block content
   h1
     | Blync Controls
-    button#signout.btn.btn-xs.btn-danger.pull-right Sign Out
+    if config.auth
+      button#signout.btn.btn-xs.btn-danger.pull-right Sign Out
   hr
   div.panel.panel-default
     div.panel-heading
@@ -36,7 +37,7 @@ block content
                   option(value='strobe') STROBE
               td
                 button.btn.btn-primary Submit
-  if config.skype
+  if skype
     div.panel.panel-default
       div.panel-heading
         h3.panel-title Skype Listener
@@ -79,6 +80,7 @@ block content
       });
     });
 
+  script(type='text/javascript').
     $('#status-form').on('submit', function(_e) {
       _e.preventDefault();
 
@@ -97,20 +99,22 @@ block content
       });
     });
 
-    $('#skype-form').on('submit', function(_e) {
-      _e.preventDefault();
+  if skype
+    script(type='text/javascript').
+      $('#skype-form').on('submit', function(_e) {
+        _e.preventDefault();
 
-      $.ajax({
-        type: $('#skype-input').val() == '1' ? 'POST' : 'DELETE',
-        url: '/skype',
-        data: {
-          device: $('#device-input').val()
-        },
-        success: function(data) {
-          console.log('SUCCESS : ' + data);
-        },
-        error: function(data) {
-          console.log('ERROR : ' + data.statusText);
-        }
+        $.ajax({
+          type: $('#skype-input').val() == '1' ? 'POST' : 'DELETE',
+          url: '/skype',
+          data: {
+            device: $('#device-input').val()
+          },
+          success: function(data) {
+            console.log('SUCCESS : ' + data);
+          },
+          error: function(data) {
+            console.log('ERROR : ' + data.statusText);
+          }
+        });
       });
-    });
