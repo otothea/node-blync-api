@@ -156,7 +156,8 @@ else {
   app.get('/', checkAuth, function(req, res) {
     res.render('index', {
       title: 'Home',
-      deviceCount: deviceCount
+      deviceCount: deviceCount,
+      config: config
     });
   });
 
@@ -289,6 +290,7 @@ else {
     res.send('Success', 200);
   });
 
+  // Start the skype stuff if config says so
   if (config.skype) {
     // Listen Skype
     app.post('/skype', checkAuth, function(req, res) {
@@ -330,13 +332,7 @@ else {
 
       res.send('No Skype Found', 404);
     });
-}
 
-  /*
-   *  EVENT HANDLERS
-   */
-
-  if (config.skype) {
     // Listen for skype desktop notifications
     skyper.desktop.on('notification', function(_body) {
       if (skypeIndexes.length > 0) {
@@ -374,6 +370,10 @@ else {
       }
     });
   }
+
+  /*
+   *  EVENT HANDLERS
+   */
 
   // Turn all Blyncs off when you exit
   process.on( 'SIGINT', function() {

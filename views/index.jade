@@ -36,30 +36,31 @@ block content
                   option(value='strobe') STROBE
               td
                 button.btn.btn-primary Submit
-  div.panel.panel-default
-    div.panel-heading
-      h3.panel-title Skype Listener
-    div.panel-body
-      form(role='form', class='form-horizontal', id='skype-form')
-        table.table.table-striped
-          thead
-            tr
-              th(width='100') Device
-              th State
-              th(width='100') Action
-          tbody
-            tr
-              td
-                select#device-input.form-control
-                  - for (var i = 0, j = 0; i < deviceCount; i++) { if (i % 2 == 0) {
-                    option(value=i) #{j}
-                  - j++; } }
-              td
-                select#skype-input.form-control
-                  option(value='0') DISABLED
-                  option(value='1') ENABLED
-              td
-                button.btn.btn-primary Submit
+  if config.skype
+    div.panel.panel-default
+      div.panel-heading
+        h3.panel-title Skype Listener
+      div.panel-body
+        form(role='form', class='form-horizontal', id='skype-form')
+          table.table.table-striped
+            thead
+              tr
+                th(width='100') Device
+                th State
+                th(width='100') Action
+            tbody
+              tr
+                td
+                  select#device-input.form-control
+                    - for (var i = 0, j = 0; i < deviceCount; i++) { if (i % 2 == 0) {
+                      option(value=i) #{j}
+                    - j++; } }
+                td
+                  select#skype-input.form-control
+                    option(value='0') DISABLED
+                    option(value='1') ENABLED
+                td
+                  button.btn.btn-primary Submit
 
   script(type='text/javascript').
     $('#signout').on('click', function(_e) {
@@ -96,20 +97,21 @@ block content
       });
     });
 
-    $('#skype-form').on('submit', function(_e) {
-      _e.preventDefault();
+    if config.skype
+      $('#skype-form').on('submit', function(_e) {
+        _e.preventDefault();
 
-      $.ajax({
-        type: $('#skype-input').val() == '1' ? 'POST' : 'DELETE',
-        url: '/skype',
-        data: {
-          device: $('#device-input').val()
-        },
-        success: function(data) {
-          console.log('SUCCESS : ' + data);
-        },
-        error: function(data) {
-          console.log('ERROR : ' + data.statusText);
-        }
+        $.ajax({
+          type: $('#skype-input').val() == '1' ? 'POST' : 'DELETE',
+          url: '/skype',
+          data: {
+            device: $('#device-input').val()
+          },
+          success: function(data) {
+            console.log('SUCCESS : ' + data);
+          },
+          error: function(data) {
+            console.log('ERROR : ' + data.statusText);
+          }
+        });
       });
-    });
