@@ -5,4 +5,5 @@ module.exports = {
   username:   'changeme',
   password:   'changeme',
   secret:     'CHANGEME',
+  skype:       true,
 };
