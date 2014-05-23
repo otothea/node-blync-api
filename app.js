@@ -291,77 +291,91 @@ else {
 
   // Listen Skype
   app.post('/skype', checkAuth, function(req, res) {
-    var post = req.body;
+    if (skypeFound) {
+      var post = req.body;
 
-    // Get the device index if exists else 0
-    var deviceIndex = post.device || 0;
+      // Get the device index if exists else 0
+      var deviceIndex = post.device || 0;
 
-    // If it's not already set
-    if (skypeIndexes.indexOf(deviceIndex) < 0) {
-      // Add to skype index array
-      skypeIndexes.push(deviceIndex);
+      // If it's not already set
+      if (skypeIndexes.indexOf(deviceIndex) < 0) {
+        // Add to skype index array
+        skypeIndexes.push(deviceIndex);
+      }
+
+      res.send('Success', 200);
     }
 
-    res.send('Success', 200);
+    res.send('No Skype Found', 404);
   });
 
   // Stop Listening Skype
   app.delete('/skype', checkAuth, function(req, res) {
-    var post = req.body;
+    if (skypeFound) {
+      var post = req.body;
 
-    // Get the device index if exists else 0
-    var deviceIndex = post.device || 0;
-    
-    // If device exists in skype indexes
-    var index = skypeIndexes.indexOf(deviceIndex);
-    if (index > -1) {
-      // Remove from skype index array
-      skypeIndexes.splice(index, 1);
+      // Get the device index if exists else 0
+      var deviceIndex = post.device || 0;
+      
+      // If device exists in skype indexes
+      var index = skypeIndexes.indexOf(deviceIndex);
+      if (index > -1) {
+        // Remove from skype index array
+        skypeIndexes.splice(index, 1);
+      }
+
+      res.send('Success', 200);
     }
 
-    res.send('Success', 200);
+    res.send('No Skype Found', 404);
   });
 
   /*
    *  EVENT HANDLERS
    */
 
-  // Listen for skype desktop notifications
-  skyper.desktop.on('notification', function(_body) {
-    if (skypeIndexes.length > 0) {
-      var body = _body.split(' ');
-      var type = body[0];
+  var skypeFound = true;
+  try {
+    // Listen for skype desktop notifications
+    skyper.desktop.on('notification', function(_body) {
+      if (skypeIndexes.length > 0) {
+        var body = _body.split(' ');
+        var type = body[0];
 
-      if (type === 'USERSTATUS') {
-        var status = body[1];
+        if (type === 'USERSTATUS') {
+          var status = body[1];
 
-        var color = COLORS.GREEN;
+          var color = COLORS.GREEN;
 
-        // Get color
-        switch(status) {
-          case 'DND':
-            color = COLORS.RED;
-            break;
-          case 'AWAY':
-            color = COLORS.YELLOW;
-            break;
-          case 'INVISIBLE':
-            color = COLORS.OFF;
-            break;
-          case 'OFFLINE':
-            color = COLORS.OFF;
-            break;
-        }
+          // Get color
+          switch(status) {
+            case 'DND':
+              color = COLORS.RED;
+              break;
+            case 'AWAY':
+              color = COLORS.YELLOW;
+              break;
+            case 'INVISIBLE':
+              color = COLORS.OFF;
+              break;
+            case 'OFFLINE':
+              color = COLORS.OFF;
+              break;
+          }
 
-        // Set color on all registered skype devices
-        for (var i = 0, length = skypeIndexes.length; i < length; i++) {
-          deviceIndex = skypeIndexes[i];
-          clearDeviceInterval(deviceIndex);
-          setDeviceColor(deviceIndex, color);
+          // Set color on all registered skype devices
+          for (var i = 0, length = skypeIndexes.length; i < length; i++) {
+            deviceIndex = skypeIndexes[i];
+            clearDeviceInterval(deviceIndex);
+            setDeviceColor(deviceIndex, color);
+          }
         }
       }
-    }
-  });
+    });
+  }
+  catch (e) {
+    skypeFound = false;
+  }
 
   // Turn all Blyncs off when you exit
   process.on( 'SIGINT', function() {
