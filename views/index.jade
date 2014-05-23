@@ -97,21 +97,20 @@ block content
       });
     });
 
-    if config.skype
-      $('#skype-form').on('submit', function(_e) {
-        _e.preventDefault();
+    $('#skype-form').on('submit', function(_e) {
+      _e.preventDefault();
 
-        $.ajax({
-          type: $('#skype-input').val() == '1' ? 'POST' : 'DELETE',
-          url: '/skype',
-          data: {
-            device: $('#device-input').val()
-          },
-          success: function(data) {
-            console.log('SUCCESS : ' + data);
-          },
-          error: function(data) {
-            console.log('ERROR : ' + data.statusText);
-          }
-        });
+      $.ajax({
+        type: $('#skype-input').val() == '1' ? 'POST' : 'DELETE',
+        url: '/skype',
+        data: {
+          device: $('#device-input').val()
+        },
+        success: function(data) {
+          console.log('SUCCESS : ' + data);
+        },
+        error: function(data) {
+          console.log('ERROR : ' + data.statusText);
+        }
       });
+    });
