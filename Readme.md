@@ -35,7 +35,7 @@ Update Status (auth required if config.auth = true)
     @param string status : required
     @param int    device : optional (for use with multiple blync devices) defaults to 0
 
-    status = "available" | "busy" | "nodisturb" | "away" | "offline" | "rave" | "police" | "traffic"
+    status = "available" | "busy" | "nodisturb" | "away" | "offline" | "rave" | "police" | "traffic" | "strobe"
 
 Start Skype Listener (auth required if config.auth = true)
 
