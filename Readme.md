@@ -12,6 +12,7 @@ config/app.js:
       username:   'changeme',
       password:   'changeme',
       secret:     'CHANGEME',
+      skype:       true,
     }
 
 ### API Docs:
