@@ -53,7 +53,5 @@ Stop Skype Listener (auth required if config.auth = true)
 
 Includes a simple Web GUI to interface with the API
 
-    In your browser:
-
     http://localhost:8000/login     // authentication form (only needed if config.auth = true)
     http://localhost:8000/          // blync controller
