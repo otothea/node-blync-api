@@ -8,11 +8,11 @@ config/app.js:
     {
       hostname:   'localhost',
       port:       '8000',
-      auth:        true,
+      auth:        true,        // Set to false to disable authentication requirement
       username:   'changeme',
       password:   'changeme',
-      secret:     'CHANGEME',
-      skype:       true,
+      secret:     'CHANGEME',   // Used for session storage
+      skype:       true,        // Set to false if no skype installed
     }
 
 ### API Docs:
