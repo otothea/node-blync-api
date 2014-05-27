@@ -119,8 +119,12 @@ else {
   // Function to set a color
   var setDeviceColor = function(_index, _color) {
     var device = devices[_index];
+    var device2 = devices[_index + 1];
     if (typeof(device) != 'undefined' && device) {
       device.setColor(_color);
+    }
+    if (typeof(device2) != 'undefined' && device2) {
+      device2.setColor(_color);
     }
   };
 
