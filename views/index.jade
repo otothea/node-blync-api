@@ -20,9 +20,9 @@ block content
             tr
               td
                 select#device-input.form-control
-                  - for (var i = 0, j = 0; i < deviceCount; i++) { if (i % 2 == 0) {
-                    option(value=i) #{j}
-                  - j++; } }
+                  - for (var i = 0, j = 0; i < deviceCount; i++) {
+                    option(value=i) #{i}
+                  - }
               td
                 select#status-input.form-control
                   option(value='available') AVAILABLE
