@@ -15,7 +15,6 @@ block content
             tr
               th(width='100') Device
               th Status
-              th(width='100') Action
           tbody
             tr
               td
@@ -34,8 +33,6 @@ block content
                   option(value='police') POLICE
                   option(value='traffic') TRAFFIC
                   option(value='strobe') STROBE
-              td
-                button.btn.btn-primary Submit
   if skype
     div.panel.panel-default
       div.panel-heading
@@ -47,7 +44,6 @@ block content
               tr
                 th(width='100') Device
                 th State
-                th(width='100') Action
             tbody
               tr
                 td
@@ -59,13 +55,10 @@ block content
                   select#skype-input.form-control
                     option(value='0') DISABLED
                     option(value='1') ENABLED
-                td
-                  button.btn.btn-primary Submit
 
   script(type='text/javascript').
     $('#signout').on('click', function(_e) {
       _e.preventDefault();
-
       $.ajax({
         type: 'DELETE',
         url: '/auth',
@@ -80,9 +73,8 @@ block content
     });
 
   script(type='text/javascript').
-    $('#status-form').on('submit', function(_e) {
+    $('#status-input').on('change', function(_e) {
       _e.preventDefault();
-
       $.ajax({
         type: 'POST',
         url: '/status/' + $('#status-input').val(),
@@ -100,9 +92,8 @@ block content
 
   if skype
     script(type='text/javascript').
-      $('#skype-form').on('submit', function(_e) {
+      $('#skype-input').on('change', function(_e) {
         _e.preventDefault();
-
         $.ajax({
           type: $('#skype-input').val() == '1' ? 'POST' : 'DELETE',
           url: '/skype',
