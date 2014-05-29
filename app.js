@@ -167,8 +167,9 @@ else {
   // Log in
   app.post('/auth', function(req, res) {
     var post = req.body;
+    checkPass = crypto.createHash('sha256').update(post.password).digest("hex");
     // Username and Password are valid
-    if (post.username == config.username && post.password == config.password) {
+    if (post.username == config.username && checkPass == config.password) {
       req.session.logged_in = true;
       res.send('Authenticated', 200);
     }
@@ -184,7 +185,7 @@ else {
     res.send('', 200);
   });
 
-  // Set a color
+  // Set a Status
   app.post('/status/:status', checkAuth, function(req, res) {
     var post = req.body;
 
@@ -346,7 +347,6 @@ else {
 
         if (type === 'USERSTATUS') {
           var status = body[1];
-
           var color = COLORS.GREEN;
 
           // Get color
