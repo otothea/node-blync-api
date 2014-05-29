@@ -58,6 +58,7 @@ else {
       bodyParser = require('body-parser'),
       cookieParser = require('cookie-parser'),
       session = require('express-session'),
+      crypto = require('crypto'),
       app = express(),
       http = require('http'),
       server = http.createServer(app);
