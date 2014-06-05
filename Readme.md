@@ -41,13 +41,13 @@ Start Skype Listener (only needed if config.skype = true, auth required if confi
 
     POST http://localhost:8000/skype
 
-    @param int    device : optional (for use with multiple blync devices) defaults to 0
+    @param int device : optional (for use with multiple blync devices) defaults to 0
 
 Stop Skype Listener (only needed if config.skype = true, auth required if config.auth = true)
 
     DELETE http://localhost:8000/skype
 
-    @param int    device : optional (for use with multiple blync devices) defaults to 0
+    @param int device : optional (for use with multiple blync devices) defaults to 0
 
 ### Web GUI
 
