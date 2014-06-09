@@ -33,6 +33,7 @@ else {
     OFFLINE: 'offline',
     POLICE: 'police',
     RAVE: 'rave',
+    DUBSTEP: 'dubstep',
     TRAFFIC: 'traffic',
     STROBE: 'strobe',
   };
@@ -243,6 +244,17 @@ else {
           i++;
           if (i == 255) i = 0;
         }, 1);
+        break;
+
+      case STATUSES.DUBSTEP:
+        clearDeviceInterval(deviceIndex);
+        var i = 0;
+        setDeviceColor(deviceIndex, i);
+        intervals[deviceIndex] = setInterval(function() {
+          setDeviceColor(deviceIndex, i);
+          i++;
+          if (i == 255) i = 0;
+        }, 100);
         break;
 
       case STATUSES.STROBE:
