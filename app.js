@@ -254,7 +254,7 @@ else {
           setDeviceColor(deviceIndex, i);
           i++;
           if (i == 255) i = 0;
-        }, 100);
+        }, 10);
         break;
 
       case STATUSES.STROBE:
